@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pencarian Aset</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: url('https://upload.wikimedia.org/wikipedia/commons/f/f8/KRL_Commuterline_Jabodetabek.jpg') no-repeat center center fixed;
+    background-size: cover;
+    background-color: #f9f9f9;
+  }
+  .overlay {
+    background-color: rgba(255,255,255,0.85);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .search-box {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+  }
+  .search-box input {
+    flex: 1;
+    padding: 8px;
+    font-size: 16px;
+  }
+  .search-box button {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .result {
+    white-space: pre-wrap;
+    font-size: 16px;
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .autocomplete-items {
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 150px;
+    overflow-y: auto;
+    background: white;
+    position: absolute;
+    z-index: 99;
+    width: calc(100% - 50px);
+  }
+  .autocomplete-items div {
+    padding: 8px;
+    cursor: pointer;
+  }
+  .autocomplete-items div:hover {
+    background-color: #f1f1f1;
+  }
+</style>
+</head>
+<body>
+<div class="overlay">
+  <div class="search-box">
+    <div style="position:relative; flex:1;">
+      <input type="text" id="kodeInput" placeholder="Masukkan kode aset...">
+      <div id="autocomplete-list" class="autocomplete-items"></div>
+    </div>
+    <button onclick="searchAsset()">🔍</button>
+  </div>
+  <div id="result" class="result"></div>
+</div>
+<script>
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTafvAiaKbaQt2RIboLf9nY6v8mltXLhSN4R-l-LZGFmic1p0-83knr-g-bFEoPDB8Rl2T661YdYFTj/pub?gid=1753334008&single=true&output=csv";
+let assets = [];
+
+fetch(csvUrl)
+  .then(res => res.text())
+  .then(text => {
+    const rows = text.split("\n").map(r => r.split(","));
+    rows.shift(); // hapus header
+    assets = rows.map(r => {
+      return {
+        kode: r[4]?.trim(),
+        deskripsi: r[5] || "",
+        kapitalisasi: r[6] || "",
+        nilai: r[7] || "",
+        lokasi: r[13] || "",
+        detail: r[14] || "",
+        opname: r[10] || r[9] || "",
+        keterangan: r[15] || ""
+      };
+    });
+  });
+
+document.getElementById('kodeInput').addEventListener('input', function() {
+  const val = this.value;
+  const list = document.getElementById('autocomplete-list');
+  list.innerHTML = '';
+  if (val.length >= 8) {
+    const matches = assets.filter(a => a.kode && a.kode.startsWith(val)).slice(0,10);
+    matches.forEach(m => {
+      const div = document.createElement('div');
+      div.textContent = m.kode;
+      div.onclick = () => {
+        document.getElementById('kodeInput').value = m.kode;
+        list.innerHTML = '';
+        searchAsset();
+      };
+      list.appendChild(div);
+    });
+  }
+});
+
+function searchAsset() {
+  const kode = document.getElementById('kodeInput').value.trim();
+  const asset = assets.find(a => a.kode === kode);
+  if (!asset) {
+    document.getElementById('result').textContent = "Data tidak ditemukan.";
+    return;
+  }
+  document.getElementById('result').textContent =
+    `Kode Aset : ${asset.kode}\n`+
+    `Deskripsi : ${asset.deskripsi}\n`+
+    `Kapitalisasi : ${asset.kapitalisasi}\n`+
+    `Nilai Perolehan : ${asset.nilai}\n`+
+    `Lokasi : ${asset.lokasi}\n`+
+    `Detail Lokasi : ${asset.detail}\n`+
+    `Opname Terakhir : ${asset.opname}\n`+
+    `${asset.keterangan}`;
+}
+</script>
+</body>
+</html>
