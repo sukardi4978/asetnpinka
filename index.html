@@ -31,12 +31,23 @@
     cursor: pointer;
   }
   .result {
-    white-space: pre-wrap;
     font-size: 16px;
     background: #fff;
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    line-height: 1.6;
+  }
+  .row {
+    display: flex;
+    align-items: flex-start;
+  }
+  .label {
+    min-width: 150px;
+    font-weight: bold;
+  }
+  .colon {
+    margin: 0 8px;
   }
   .autocomplete-items {
     border: 1px solid #ccc;
@@ -110,6 +121,10 @@ document.getElementById('kodeInput').addEventListener('input', function() {
   }
 });
 
+function createRow(label, value) {
+  return `<div class="row"><div class="label">${label}</div><div class="colon">:</div><div class="value">${value}</div></div>`;
+}
+
 function searchAsset() {
   const kode = document.getElementById('kodeInput').value.trim();
   const asset = assets.find(a => a.kode === kode);
@@ -117,15 +132,18 @@ function searchAsset() {
     document.getElementById('result').textContent = "Data tidak ditemukan.";
     return;
   }
-  document.getElementById('result').textContent =
-    `Kode Aset : ${asset.kode}\n`+
-    `Deskripsi : ${asset.deskripsi}\n`+
-    `Kapitalisasi : ${asset.kapitalisasi}\n`+
-    `Nilai Perolehan : ${asset.nilai}\n`+
-    `Lokasi : ${asset.lokasi}\n`+
-    `Detail Lokasi : ${asset.detail}\n`+
-    `Opname Terakhir : ${asset.opname}\n`+
-    `${asset.keterangan}`;
+  let html = "";
+  html += createRow("Kode Aset", asset.kode);
+  html += createRow("Deskripsi", asset.deskripsi);
+  html += createRow("Kapitalisasi", asset.kapitalisasi);
+  html += createRow("Nilai Perolehan", asset.nilai);
+  html += createRow("Lokasi", asset.lokasi);
+  html += createRow("Detail Lokasi", asset.detail);
+  html += createRow("Opname Terakhir", asset.opname);
+  if(asset.keterangan) {
+    html += `<div style="margin-top:10px;">${asset.keterangan}</div>`;
+  }
+  document.getElementById('result').innerHTML = html;
 }
 </script>
 </body>
