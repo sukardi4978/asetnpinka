@@ -14,14 +14,17 @@
   .overlay {
     min-height: 100vh;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
   }
   .search-box {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
+    gap: 6px;
   }
   .search-box input {
-    width: 250px; /* pas untuk 12 digit */
+    width: 250px; /* pas untuk ~12 digit */
     padding: 8px;
     font-size: 16px;
   }
@@ -30,19 +33,34 @@
     cursor: pointer;
   }
   .result {
-    white-space: pre-wrap;
     font-size: 16px;
     background: #fff;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    max-width: 600px;
-    margin: auto;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .rows {
+    display: grid;
+    grid-template-columns: 180px 16px 1fr; /* label | : | value */
+    row-gap: 6px;
+    align-items: start;
+  }
+  .label {
+    font-weight: 600;
+  }
+  .colon {
+    text-align: center;
+  }
+  .keterangan {
+    margin-top: 10px;
+    white-space: pre-wrap; /* biar baris panjang tetap turun */
   }
   .autocomplete-items {
     border: 1px solid #ccc;
     border-top: none;
-    max-height: 150px;
+    max-height: 180px;
     overflow-y: auto;
     background: white;
     position: absolute;
@@ -57,12 +75,11 @@
     background-color: #f1f1f1;
   }
   footer {
-    position: fixed;
-    bottom: 0;
+    margin-top: auto;
     width: 100%;
-    background: #0077b6;
+    background: linear-gradient(90deg, #1266f1, #00a8ff);
     color: #fff;
-    padding: 8px;
+    padding: 8px 0;
     text-align: center;
     font-weight: bold;
     overflow: hidden;
@@ -70,7 +87,7 @@
   .marquee {
     display: inline-block;
     white-space: nowrap;
-    animation: scroll 12s linear infinite;
+    animation: scroll 14s linear infinite;
   }
   @keyframes scroll {
     from { transform: translateX(100%); }
@@ -88,40 +105,48 @@
     <button onclick="searchAsset()">🔍</button>
   </div>
   <div id="result" class="result"></div>
+  <footer><div id="running-text" class="marquee"></div></footer>
 </div>
-<footer><div id="running-text" class="marquee"></div></footer>
 
 <script>
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTafvAiaKbaQt2RIboLf9nY6v8mltXLhSN4R-l-LZGFmic1p0-83knr-g-bFEoPDB8Rl2T661YdYFTj/pub?gid=1753334008&single=true&output=csv";
 let assets = [];
-let runningText = "";
 
 fetch(csvUrl)
   .then(res => res.text())
   .then(text => {
-    const rows = text.split("\n").map(r => r.split(/,(?=(?:(?:[^\"]*\"){2})*[^\"]*$)/));
+    // Split CSV menjaga koma di dalam tanda kutip
+    const rows = text.split(/\r?\n/).map(r => r.split(/,(?=(?:(?:[^\"]*\"){2})*[^\"]*$)/));
     const header = rows.shift(); 
     assets = rows.map(r => ({
-      kode: r[4]?.trim(),
-      deskripsi: r[5] || "",
-      kapitalisasi: r[6] || "",
-      nilai: r[19] || "",
-      opname: r[10] || r[9] || "",
-      lokasi: r[13] || "",
-      detail: r[14] || "",
-      kondisi: r[15] || "",
-      keterangan: r[16] || r[21] || ""
+      kode: (r[4] || '').trim(),       // E
+      deskripsi: r[5] || '',           // F
+      kapitalisasi: r[6] || '',        // G
+      nilai: r[19] || '',              // T
+      opname: r[10] || r[9] || '',     // K atau J
+      lokasi: r[13] || '',             // N
+      detail: r[14] || '',             // O
+      kondisi: r[15] || '',            // P
+      keterangan: r[16] || r[21] || '' // Q atau V
     }));
-    runningText = rows[0]?.[17] || ""; // R1 (kolom ke-18, index 17)
-    document.getElementById('running-text').textContent = runningText;
+    // Running text dari R1 (index 17)
+    const r1 = rows[0]?.[17] || '';
+    document.getElementById('running-text').textContent = r1;
   });
 
+// Enter untuk cari
+document.getElementById('kodeInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') searchAsset();
+});
+
+// Autocomplete setelah 8 digit (8 digit dianggap awalan + '-0')
 document.getElementById('kodeInput').addEventListener('input', function() {
-  const val = this.value;
+  const val = this.value.trim();
   const list = document.getElementById('autocomplete-list');
   list.innerHTML = '';
   if (val.length >= 8) {
-    const matches = assets.filter(a => a.kode && (a.kode.startsWith(val) || a.kode.startsWith(val + "-0"))).slice(0,10);
+    const prefix = (val.length === 8) ? (val + '-0') : val;
+    const matches = assets.filter(a => a.kode && a.kode.startsWith(prefix)).slice(0, 10);
     matches.forEach(m => {
       const div = document.createElement('div');
       div.textContent = m.kode;
@@ -135,30 +160,32 @@ document.getElementById('kodeInput').addEventListener('input', function() {
   }
 });
 
-document.getElementById("kodeInput").addEventListener("keypress", function(e) {
-  if (e.key === "Enter") {
-    searchAsset();
-  }
-});
+function row(label, value) {
+  return `<div class="label">${label}</div><div class="colon">:</div><div>${value || ''}</div>`;
+}
 
 function searchAsset() {
   let kode = document.getElementById('kodeInput').value.trim();
-  if (kode.length === 8) kode += "-0";
+  if (kode.length === 8) kode += '-0';
   const asset = assets.find(a => a.kode === kode);
+  const result = document.getElementById('result');
   if (!asset) {
-    document.getElementById('result').textContent = "Data tidak ditemukan.";
+    result.textContent = 'Data tidak ditemukan.';
     return;
   }
-  document.getElementById('result').textContent =
-    `Kode Aset      : ${asset.kode}\n`+
-    `Deskripsi      : ${asset.deskripsi}\n`+
-    `Kapitalisasi   : ${asset.kapitalisasi}\n`+
-    `Nilai Perolehan: ${asset.nilai}\n`+
-    `Lokasi         : ${asset.lokasi}\n`+
-    `Detail Lokasi  : ${asset.detail}\n`+
-    `Opname Terakhir: ${asset.opname}\n`+
-    `Kondisi        : ${asset.kondisi}\n`+
-    `${asset.keterangan}`;
+  result.innerHTML = `
+    <div class="rows">
+      ${row('Kode Aset', asset.kode)}
+      ${row('Deskripsi', asset.deskripsi)}
+      ${row('Kapitalisasi', asset.kapitalisasi)}
+      ${row('Nilai Perolehan', asset.nilai)}
+      ${row('Opname Terakhir', asset.opname)}
+      ${row('Lokasi', asset.lokasi)}
+      ${row('Detail Lokasi', asset.detail)}
+      ${row('Kondisi', asset.kondisi)}
+    </div>
+    <div class="keterangan">${asset.keterangan}</div>
+  `;
 }
 </script>
 </body>
