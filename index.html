@@ -32,26 +32,20 @@
     cursor: pointer;
   }
   .result {
-    font-size: 15px;
+    font-size: 16px;
     background: #fff;
-    padding: 12px 16px;
+    padding: 12px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    line-height: 1.4;
   }
   .result-row {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-bottom: 6px;
+    align-items: flex-start;
+    margin-bottom: 4px;
   }
   .result-label {
     min-width: 160px;
     font-weight: bold;
-  }
-  .result-colon {
-    display: inline-block;
-    width: 8px;
   }
   .autocomplete-items {
     border: 1px solid #ccc;
@@ -62,10 +56,9 @@
     position: absolute;
     z-index: 99;
     width: calc(100% - 50px);
-    font-size: 15px;
   }
   .autocomplete-items div {
-    padding: 6px 8px;
+    padding: 8px;
     cursor: pointer;
   }
   .autocomplete-items div:hover {
@@ -84,11 +77,6 @@
   @keyframes marquee {
     0% { text-indent: 100%; }
     100% { text-indent: -100%; }
-  }
-  @media (max-width: 600px) {
-    .result-label {
-      min-width: 120px;
-    }
   }
 </style>
 </head>
@@ -113,7 +101,7 @@ fetch(csvUrl)
   .then(res => res.text())
   .then(text => {
     const rows = text.split(/\r?\n/).map(r => r.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/));
-    rows.shift();
+    rows.shift(); // buang header
     assets = rows.map(r => {
       return {
         kode: r[4]?.trim(),
@@ -159,9 +147,12 @@ document.getElementById('kodeInput').addEventListener('keydown', function(e) {
   }
 });
 
-function formatRupiah(angka) {
-  if (!angka) return "-";
-  return "Rp " + parseInt(angka).toLocaleString("id-ID");
+function formatRupiah(value) {
+  if (!value) return "-";
+  let cleaned = value.toString().replace(/[.,]/g, "");
+  let number = parseInt(cleaned, 10);
+  if (isNaN(number)) return value;
+  return "Rp. " + number.toLocaleString("id-ID");
 }
 
 function searchAsset() {
@@ -175,15 +166,15 @@ function searchAsset() {
     return;
   }
   document.getElementById('result').innerHTML = `
-    <div class="result-row"><div class="result-label">Kode Aset</div><div class="result-colon">:</div><div>${asset.kode}</div></div>
-    <div class="result-row"><div class="result-label">Deskripsi</div><div class="result-colon">:</div><div>${asset.deskripsi}</div></div>
-    <div class="result-row"><div class="result-label">Kapitalisasi</div><div class="result-colon">:</div><div>${asset.kapitalisasi}</div></div>
-    <div class="result-row"><div class="result-label">Nilai Perolehan</div><div class="result-colon">:</div><div>${formatRupiah(asset.nilai)}</div></div>
-    <div class="result-row"><div class="result-label">Lokasi</div><div class="result-colon">:</div><div>${asset.lokasi}</div></div>
-    <div class="result-row"><div class="result-label">Detail Lokasi</div><div class="result-colon">:</div><div>${asset.detail}</div></div>
-    <div class="result-row"><div class="result-label">Opname Terakhir</div><div class="result-colon">:</div><div>${asset.opname}</div></div>
-    <div class="result-row"><div class="result-label">Kondisi</div><div class="result-colon">:</div><div>${asset.kondisi}</div></div>
-    <div class="result-row"><div class="result-label">Keterangan</div><div class="result-colon">:</div><div>${asset.keterangan}</div></div>
+    <div class="result-row"><div class="result-label">Kode Aset :</div><div>${asset.kode}</div></div>
+    <div class="result-row"><div class="result-label">Deskripsi :</div><div>${asset.deskripsi}</div></div>
+    <div class="result-row"><div class="result-label">Kapitalisasi :</div><div>${asset.kapitalisasi}</div></div>
+    <div class="result-row"><div class="result-label">Nilai Perolehan :</div><div>${formatRupiah(asset.nilai)}</div></div>
+    <div class="result-row"><div class="result-label">Lokasi :</div><div>${asset.lokasi}</div></div>
+    <div class="result-row"><div class="result-label">Detail Lokasi :</div><div>${asset.detail}</div></div>
+    <div class="result-row"><div class="result-label">Opname Terakhir :</div><div>${asset.opname}</div></div>
+    <div class="result-row"><div class="result-label">Kondisi :</div><div>${asset.kondisi}</div></div>
+    <div class="result-row"><div class="result-label">Keterangan :</div><div>${asset.keterangan}</div></div>
   `;
 }
 </script>
