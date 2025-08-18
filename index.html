@@ -3,26 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pencarian Aset</title>
+<title>Pencarian Aset NPINKA</title>
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: url('https://upload.wikimedia.org/wikipedia/commons/f/f8/KRL_Commuterline_Jabodetabek.jpg') no-repeat center center fixed;
-    background-size: cover;
-    background-color: #f9f9f9;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 0;
   }
   .overlay {
-    background-color: rgba(255,255,255,0.85);
     min-height: 100vh;
     padding: 20px;
   }
   .search-box {
     display: flex;
-    gap: 5px;
+    justify-content: center;
     margin-bottom: 20px;
   }
   .search-box input {
-    width: 150px;
+    width: 250px; /* pas untuk 12 digit */
     padding: 8px;
     font-size: 16px;
   }
@@ -31,22 +30,14 @@
     cursor: pointer;
   }
   .result {
+    white-space: pre-wrap;
     font-size: 16px;
     background: #fff;
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  .result-line {
-    display: flex;
-    align-items: flex-start;
-  }
-  .label {
-    width: 150px;
-    font-weight: bold;
-  }
-  .colon {
-    margin-right: 8px;
+    max-width: 600px;
+    margin: auto;
   }
   .autocomplete-items {
     border: 1px solid #ccc;
@@ -56,7 +47,7 @@
     background: white;
     position: absolute;
     z-index: 99;
-    width: 150px;
+    width: 250px;
   }
   .autocomplete-items div {
     padding: 8px;
@@ -65,38 +56,64 @@
   .autocomplete-items div:hover {
     background-color: #f1f1f1;
   }
+  footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #0077b6;
+    color: #fff;
+    padding: 8px;
+    text-align: center;
+    font-weight: bold;
+    overflow: hidden;
+  }
+  .marquee {
+    display: inline-block;
+    white-space: nowrap;
+    animation: scroll 12s linear infinite;
+  }
+  @keyframes scroll {
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
+  }
 </style>
 </head>
 <body>
 <div class="overlay">
   <div class="search-box">
     <div style="position:relative;">
-      <input type="text" id="kodeInput" maxlength="12" placeholder="Kode aset...">
+      <input type="text" id="kodeInput" placeholder="Masukkan kode aset...">
       <div id="autocomplete-list" class="autocomplete-items"></div>
     </div>
     <button onclick="searchAsset()">🔍</button>
   </div>
   <div id="result" class="result"></div>
 </div>
+<footer><div id="running-text" class="marquee"></div></footer>
+
 <script>
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTafvAiaKbaQt2RIboLf9nY6v8mltXLhSN4R-l-LZGFmic1p0-83knr-g-bFEoPDB8Rl2T661YdYFTj/pub?gid=1753334008&single=true&output=csv";
 let assets = [];
+let runningText = "";
 
 fetch(csvUrl)
   .then(res => res.text())
   .then(text => {
-    const rows = text.split(/\r?\n/).map(line => line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(c => c.replace(/^"|"$/g,'')));
-    rows.shift();
+    const rows = text.split("\n").map(r => r.split(/,(?=(?:(?:[^\"]*\"){2})*[^\"]*$)/));
+    const header = rows.shift(); 
     assets = rows.map(r => ({
       kode: r[4]?.trim(),
       deskripsi: r[5] || "",
       kapitalisasi: r[6] || "",
-      nilai: r[7] || "",
+      nilai: r[19] || "",
+      opname: r[10] || r[9] || "",
       lokasi: r[13] || "",
       detail: r[14] || "",
-      opname: r[10] || r[9] || "",
-      keterangan: r[15] || ""
+      kondisi: r[15] || "",
+      keterangan: r[16] || r[21] || ""
     }));
+    runningText = rows[0]?.[17] || ""; // R1 (kolom ke-18, index 17)
+    document.getElementById('running-text').textContent = runningText;
   });
 
 document.getElementById('kodeInput').addEventListener('input', function() {
@@ -104,9 +121,7 @@ document.getElementById('kodeInput').addEventListener('input', function() {
   const list = document.getElementById('autocomplete-list');
   list.innerHTML = '';
   if (val.length >= 8) {
-    let searchVal = val;
-    if (val.length === 8) searchVal += "-0";
-    const matches = assets.filter(a => a.kode && a.kode.startsWith(searchVal)).slice(0,10);
+    const matches = assets.filter(a => a.kode && (a.kode.startsWith(val) || a.kode.startsWith(val + "-0"))).slice(0,10);
     matches.forEach(m => {
       const div = document.createElement('div');
       div.textContent = m.kode;
@@ -120,8 +135,8 @@ document.getElementById('kodeInput').addEventListener('input', function() {
   }
 });
 
-document.getElementById('kodeInput').addEventListener('keypress', function(e) {
-  if (e.key === 'Enter') {
+document.getElementById("kodeInput").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") {
     searchAsset();
   }
 });
@@ -130,21 +145,20 @@ function searchAsset() {
   let kode = document.getElementById('kodeInput').value.trim();
   if (kode.length === 8) kode += "-0";
   const asset = assets.find(a => a.kode === kode);
-  const resultDiv = document.getElementById('result');
   if (!asset) {
-    resultDiv.textContent = "Data tidak ditemukan.";
+    document.getElementById('result').textContent = "Data tidak ditemukan.";
     return;
   }
-  resultDiv.innerHTML = `
-    <div class="result-line"><div class="label">Kode Aset</div><div class="colon">:</div><div>${asset.kode}</div></div>
-    <div class="result-line"><div class="label">Deskripsi</div><div class="colon">:</div><div>${asset.deskripsi}</div></div>
-    <div class="result-line"><div class="label">Kapitalisasi</div><div class="colon">:</div><div>${asset.kapitalisasi}</div></div>
-    <div class="result-line"><div class="label">Nilai Perolehan</div><div class="colon">:</div><div>${asset.nilai}</div></div>
-    <div class="result-line"><div class="label">Lokasi</div><div class="colon">:</div><div>${asset.lokasi}</div></div>
-    <div class="result-line"><div class="label">Detail Lokasi</div><div class="colon">:</div><div>${asset.detail}</div></div>
-    <div class="result-line"><div class="label">Opname Terakhir</div><div class="colon">:</div><div>${asset.opname}</div></div>
-    <div>${asset.keterangan}</div>
-  `;
+  document.getElementById('result').textContent =
+    `Kode Aset      : ${asset.kode}\n`+
+    `Deskripsi      : ${asset.deskripsi}\n`+
+    `Kapitalisasi   : ${asset.kapitalisasi}\n`+
+    `Nilai Perolehan: ${asset.nilai}\n`+
+    `Lokasi         : ${asset.lokasi}\n`+
+    `Detail Lokasi  : ${asset.detail}\n`+
+    `Opname Terakhir: ${asset.opname}\n`+
+    `Kondisi        : ${asset.kondisi}\n`+
+    `${asset.keterangan}`;
 }
 </script>
 </body>
