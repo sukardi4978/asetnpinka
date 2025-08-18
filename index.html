@@ -32,23 +32,26 @@
     cursor: pointer;
   }
   .result {
-    font-size: 16px;
+    font-size: 15px;
     background: #fff;
-    padding: 10px;
+    padding: 12px 16px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    line-height: 1.4;
   }
   .result-row {
     display: flex;
-    align-items: flex-start;
-    margin-bottom: 2px; /* rapet, bukan double enter */
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 6px;
   }
   .result-label {
-    width: 160px;
+    min-width: 160px;
     font-weight: bold;
   }
   .result-colon {
-    margin: 0 4px;
+    display: inline-block;
+    width: 8px;
   }
   .autocomplete-items {
     border: 1px solid #ccc;
@@ -59,9 +62,10 @@
     position: absolute;
     z-index: 99;
     width: calc(100% - 50px);
+    font-size: 15px;
   }
   .autocomplete-items div {
-    padding: 8px;
+    padding: 6px 8px;
     cursor: pointer;
   }
   .autocomplete-items div:hover {
@@ -80,6 +84,11 @@
   @keyframes marquee {
     0% { text-indent: 100%; }
     100% { text-indent: -100%; }
+  }
+  @media (max-width: 600px) {
+    .result-label {
+      min-width: 120px;
+    }
   }
 </style>
 </head>
@@ -152,7 +161,7 @@ document.getElementById('kodeInput').addEventListener('keydown', function(e) {
 
 function formatRupiah(angka) {
   if (!angka) return "-";
-  return "Rp" + parseInt(angka).toLocaleString("id-ID");
+  return "Rp " + parseInt(angka).toLocaleString("id-ID");
 }
 
 function searchAsset() {
