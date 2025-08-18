@@ -25,7 +25,7 @@
     flex: 1;
     padding: 8px;
     font-size: 16px;
-    max-width: 220px; /* cukup untuk 12 digit */
+    max-width: 220px;
   }
   .search-box button {
     padding: 8px 12px;
@@ -34,21 +34,22 @@
   .result {
     font-size: 16px;
     background: #fff;
-    padding: 15px;
+    padding: 10px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    white-space: pre-wrap;
   }
-  /* tiga kolom: label | ':' | nilai  */
   .result-row {
-    display: grid;
-    grid-template-columns: 140px 12px 1fr;
-    align-items: start;
-    column-gap: 6px;
-    margin-bottom: 4px;
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2px; /* rapet, bukan double enter */
   }
-  .result-label { font-weight: bold; }
-  .result-colon { text-align: center; }
+  .result-label {
+    width: 160px;
+    font-weight: bold;
+  }
+  .result-colon {
+    margin: 0 4px;
+  }
   .autocomplete-items {
     border: 1px solid #ccc;
     border-top: none;
@@ -57,8 +58,7 @@
     background: white;
     position: absolute;
     z-index: 99;
-    width: 100%;
-    box-sizing: border-box;
+    width: calc(100% - 50px);
   }
   .autocomplete-items div {
     padding: 8px;
@@ -81,16 +81,12 @@
     0% { text-indent: 100%; }
     100% { text-indent: -100%; }
   }
-  @media (max-width: 480px) {
-    .search-box input { max-width: 100%; }
-    .result-row { grid-template-columns: 120px 10px 1fr; }
-  }
 </style>
 </head>
 <body>
 <div class="overlay">
   <div class="search-box">
-    <div style="position:relative; flex:1; max-width: 260px;">
+    <div style="position:relative; flex:1;">
       <input type="text" id="kodeInput" placeholder="Masukkan kode aset...">
       <div id="autocomplete-list" class="autocomplete-items"></div>
     </div>
@@ -108,19 +104,21 @@ fetch(csvUrl)
   .then(res => res.text())
   .then(text => {
     const rows = text.split(/\r?\n/).map(r => r.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/));
-    rows.shift(); // header
-    assets = rows.map(r => ({
-      kode: (r[4]||'').trim(),
-      deskripsi: r[5] || "",
-      kapitalisasi: r[6] || "",
-      nilai: r[19] || "",
-      opname: r[10] || r[9] || "",
-      lokasi: r[13] || "",
-      detail: r[14] || "",
-      kondisi: r[15] || "",
-      keterangan: r[16] || r[21] || ""
-    }));
-    runningText = rows[0]?.[17] || ""; // ambil R1
+    rows.shift();
+    assets = rows.map(r => {
+      return {
+        kode: r[4]?.trim(),
+        deskripsi: r[5] || "",
+        kapitalisasi: r[6] || "",
+        nilai: r[19] || "",
+        opname: r[10] || r[9] || "",
+        lokasi: r[13] || "",
+        detail: r[14] || "",
+        kondisi: r[15] || "",
+        keterangan: r[16] || r[21] || ""
+      };
+    });
+    runningText = rows[0]?.[17] || "";
     document.getElementById("runningText").textContent = runningText;
   });
 
@@ -131,8 +129,8 @@ document.getElementById('kodeInput').addEventListener('input', function() {
   if (val.length >= 6) {
     const matches = assets
       .filter(a => a.kode && a.kode.startsWith(val))
-      .sort((a,b) => a.kode.localeCompare(b.kode, 'id')) // sort A-Z
-      .slice(0, 10);
+      .sort((a,b) => a.kode.localeCompare(b.kode))
+      .slice(0,10);
     matches.forEach(m => {
       const div = document.createElement('div');
       div.textContent = m.kode;
@@ -152,22 +150,26 @@ document.getElementById('kodeInput').addEventListener('keydown', function(e) {
   }
 });
 
+function formatRupiah(angka) {
+  if (!angka) return "-";
+  return "Rp" + parseInt(angka).toLocaleString("id-ID");
+}
+
 function searchAsset() {
   let kode = document.getElementById('kodeInput').value.trim();
   if (kode.length === 8 && !kode.includes("-")) {
     kode = kode + "-0";
   }
   const asset = assets.find(a => a.kode === kode);
-  const resultEl = document.getElementById('result');
   if (!asset) {
-    resultEl.textContent = "Data tidak ditemukan.";
+    document.getElementById('result').textContent = "Data tidak ditemukan.";
     return;
   }
-  resultEl.innerHTML = `
+  document.getElementById('result').innerHTML = `
     <div class="result-row"><div class="result-label">Kode Aset</div><div class="result-colon">:</div><div>${asset.kode}</div></div>
     <div class="result-row"><div class="result-label">Deskripsi</div><div class="result-colon">:</div><div>${asset.deskripsi}</div></div>
     <div class="result-row"><div class="result-label">Kapitalisasi</div><div class="result-colon">:</div><div>${asset.kapitalisasi}</div></div>
-    <div class="result-row"><div class="result-label">Nilai Perolehan</div><div class="result-colon">:</div><div>${asset.nilai}</div></div>
+    <div class="result-row"><div class="result-label">Nilai Perolehan</div><div class="result-colon">:</div><div>${formatRupiah(asset.nilai)}</div></div>
     <div class="result-row"><div class="result-label">Lokasi</div><div class="result-colon">:</div><div>${asset.lokasi}</div></div>
     <div class="result-row"><div class="result-label">Detail Lokasi</div><div class="result-colon">:</div><div>${asset.detail}</div></div>
     <div class="result-row"><div class="result-label">Opname Terakhir</div><div class="result-colon">:</div><div>${asset.opname}</div></div>
