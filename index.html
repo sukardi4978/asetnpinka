@@ -14,40 +14,4 @@
 </head>
 <body>
 <h2>Daftar Kode Aset berawalan <code>111000</code></h2>
-<input type="text" id="filterInput" placeholder="Filter akhiran...">
-<div id="count"></div>
-<div class="list" id="list"></div>
-
-<script>
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTafvAiaKbaQt2RIboLf9nY6v8mltXLhSN4R-l-LZGFmic1p0-83knr-g-bFEoPDB8Rl2T661YdYFTj/pub?gid=1753334008&single=true&output=csv";
-let filteredCodes = [];
-
-fetch(csvUrl)
-  .then(res => res.text())
-  .then(text => {
-    const rows = text.split(/\r?\n/).map(r => r.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/));
-    rows.shift();
-    filteredCodes = rows.map(r => r[4]).filter(k => k && k.startsWith("111000")).sort();
-    displayList(filteredCodes);
-  });
-
-document.getElementById("filterInput").addEventListener("input", function() {
-  const val = this.value.trim();
-  const filtered = filteredCodes.filter(k => k.includes(val));
-  displayList(filtered);
-});
-
-function displayList(codes) {
-  document.getElementById("count").textContent = "Jumlah kode ditemukan: " + codes.length;
-  const listDiv = document.getElementById("list");
-  listDiv.innerHTML = "";
-  codes.forEach(k => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.textContent = k;
-    listDiv.appendChild(div);
-  });
-}
-</script>
-</body>
-</html>
+<input type="text" id=
