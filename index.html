@@ -53,8 +53,8 @@ body.dark { background: #121212 url('kereta-watermark.png') center top no-repeat
   pointer-events: none;
   font-weight: 500;
   font-size: 16px;
-  z-index: 9999; /* selalu di atas */
-  background: rgba(255,255,255,0.3); /* light mode */
+  z-index: 9999;
+  background: rgba(255,255,255,0.3);
   color: #1a73e8;
 }
 #marqueeFloating span {
@@ -166,7 +166,7 @@ document.getElementById("searchButton").addEventListener("click", searchAsset);
 const textEl = document.getElementById("marqueeFloatingText");
 textEl.style.display="inline-block";
 window.addEventListener("load", ()=>{
-  let offset = window.innerWidth; // mulai di ujung kanan
+  let offset = 10; // mulai di dalam viewport supaya langsung terlihat
   function runMarquee(){
     offset -= 1; // kecepatan
     textEl.style.transform = `translateX(${offset}px)`;
