@@ -11,7 +11,7 @@
 <style>
 body {
   margin: 0;
-  padding-top: 50px; /* beri ruang untuk marquee */
+  padding-top: 50px; /* ruang untuk marquee */
   text-align: center;
   font-family: 'Roboto Condensed', Arial, sans-serif;
   transition: background 0.3s, color 0.3s;
@@ -60,11 +60,12 @@ body.dark { background: #121212 url('kereta-watermark.png') center top no-repeat
 #marqueeFloating span {
   display: inline-block;
   white-space: nowrap;
+  transform: translateX(0); /* tampil langsung */
 }
 body.dark #marqueeFloating { background: rgba(0,0,0,0.3); color: #1a73e8; }
 </style>
 </head>
-<body>
+<body class="light">
 
 <!-- Running Text -->
 <div id="marqueeFloating"><span id="marqueeFloatingText">Info Aset PT INKA…</span></div>
@@ -161,15 +162,15 @@ searchBox.addEventListener("keydown",e=>{ if(e.key==="Enter") searchAsset(); });
 searchBox.addEventListener("focus",function(){ setTimeout(()=>{this.select();},0); });
 document.getElementById("searchButton").addEventListener("click", searchAsset);
 
-// ====== Running Text jalan ======
+// ====== Running Text jalan, langsung terlihat ======
 const textEl = document.getElementById("marqueeFloatingText");
 textEl.style.display="inline-block";
 window.addEventListener("load", ()=>{
-  let offset = window.innerWidth;
+  let offset = window.innerWidth; // mulai di ujung kanan
   function runMarquee(){
     offset -= 1; // kecepatan
     textEl.style.transform = `translateX(${offset}px)`;
-    if(Math.abs(offset) > textEl.offsetWidth) offset = window.innerWidth;
+    if(Math.abs(offset) > textEl.offsetWidth + window.innerWidth) offset = window.innerWidth;
     requestAnimationFrame(runMarquee);
   }
   runMarquee();
