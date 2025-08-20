@@ -92,12 +92,11 @@ async function loadSheet(){
     const opt=document.createElement("option"); opt.value=k; dataList.appendChild(opt);
   });
 
-  // === Pastikan R1 dan R2 terambil benar ===
-  let r1Row=rows.find(r=>r[17] && r[17].trim()!=="") || [];
-  let r2Row=rows.find((r,i)=>i!==0 && r[17] && r[17].trim()!=="") || [];
-
-  document.getElementById("marqueeFloatingText").textContent = r1Row[17] || "Info Aset PT INKA…";
-  document.getElementById("topMessage").textContent = r2Row[17] || "Info Aset PT INKA…";
+  // === Tukar alamat sumber data ===
+  const r1Row = rows[0] || [];
+  const r2Row = rows[1] || [];
+  document.getElementById("marqueeFloatingText").textContent = r1Row[17] || "Info Aset PT INKA…"; // Running Text dari R1
+  document.getElementById("topMessage").textContent = r2Row[17] || "Info Aset PT INKA…";     // Tulisan diam dari R2
 }
 loadSheet().catch(err=>{ document.querySelector("#output pre").textContent="Gagal memuat data: "+err; });
 
