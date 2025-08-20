@@ -27,7 +27,13 @@ body {
 #output pre { margin: 0; font-size: 16px; line-height: 1.2; font-family: 'Roboto Mono', monospace; white-space: pre-wrap; }
 
 /* Tulisan diam di atas kotak hasil pencarian */
-#topMessage { margin-bottom: 5px; font-weight: 400; font-size: 16px; font-family: 'Roboto Mono', monospace; color: inherit; }
+#topMessage { 
+  margin-bottom: 5px; 
+  font-weight: 400; 
+  font-size: 16px; 
+  font-family: 'Roboto Mono', monospace; 
+  color: inherit; /* Warna mengikuti output */
+}
 
 /* Hint */
 .hint { font-size: 12px; color: #666; margin-top: 6px; }
@@ -39,11 +45,13 @@ body {
 body.light { background: url('kereta-watermark.png') center top no-repeat; background-size: contain; background-color: #f8fbff; color: #222; }
 #output.light { background: #f8fbff; color:#222; border: 1px solid #ccc; }
 #searchBox.light { background:#fff; color:#000; }
+#topMessage.light { color: inherit; }
 
 /* Tema Dark */
 body.dark { background: #121212 url('kereta-watermark.png') center top no-repeat; background-size: contain; color: #eee; }
 #output.dark { background: #121212; color:#eee; border: 1px solid #555; }
 #searchBox.dark { background:#222; color:#fff; }
+#topMessage.dark { color: inherit; }
 
 /* Running Text */
 #marqueeFloating {
@@ -72,8 +80,8 @@ body.dark #marqueeFloating { background: rgba(0,0,0,0.3); color: #1a73e8; }
 </head>
 <body class="light">
 
-<!-- Running Text dari sel R1 -->
-<div id="marqueeFloating"><span id="marqueeFloatingText">Info Aset PT INKA…</span></div>
+<!-- Running Text placeholder -->
+<div id="marqueeFloating"><span id="marqueeFloatingText">Memuat Info…</span></div>
 
 <h2>Cek Data Aset</h2>
 
@@ -84,8 +92,8 @@ body.dark #marqueeFloating { background: rgba(0,0,0,0.3); color: #1a73e8; }
 </div>
 <div class="hint">Tekan Enter atau tombol 🔍 untuk mencari. Jika kode 8 digit tanpa “-” atau 8 digit + "-", otomatis ditambah “-0”.</div>
 
-<!-- Tulisan diam di atas output dari sel R2 -->
-<div id="topMessage">Info Aset PT INKA…</div>
+<!-- Tulisan diam placeholder -->
+<div id="topMessage">Memuat Info…</div>
 
 <div id="output"><pre>Silakan ketik Nomor Aset…</pre></div>
 
@@ -183,13 +191,13 @@ searchBox.addEventListener("keydown",e=>{ if(e.key==="Enter") searchAsset(); });
 searchBox.addEventListener("focus",function(){ setTimeout(()=>{this.select();},0); });
 document.getElementById("searchButton").addEventListener("click", searchAsset);
 
-// ====== Running Text jalan, langsung terlihat ======
+// ====== Running Text jalan ======
 const textEl = document.getElementById("marqueeFloatingText");
 textEl.style.display = "inline-block";
 window.addEventListener("load", ()=>{
-  let offset = 10; // mulai di dalam viewport supaya langsung terlihat
+  let offset = 10; 
   function runMarquee(){
-    offset -= 1; // kecepatan
+    offset -= 1;
     textEl.style.transform = `translateX(${offset}px)`;
     if(Math.abs(offset) > textEl.offsetWidth + window.innerWidth) offset = window.innerWidth;
     requestAnimationFrame(runMarquee);
@@ -200,10 +208,11 @@ window.addEventListener("load", ()=>{
 // ====== Toggle Tema ======
 const themeToggle=document.getElementById("themeToggle");
 function setTheme(theme){
-  document.body.className=theme;
-  document.getElementById("output").className=theme;
-  document.getElementById("searchBox").className=theme;
-  themeToggle.textContent=theme==='light'?'Tema Gelap':'Tema Terang';
+  document.body.className = theme;
+  document.getElementById("output").className = theme;
+  document.getElementById("searchBox").className = theme;
+  document.getElementById("topMessage").className = theme;
+  themeToggle.textContent = theme==='light'?'Tema Gelap':'Tema Terang';
 }
 setTheme('light');
 themeToggle.addEventListener("click",()=>{ const current=document.body.className; setTheme(current==='light'?'dark':'light'); });
