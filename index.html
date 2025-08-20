@@ -47,6 +47,10 @@ body.dark { background: #121212 url('kereta-watermark.png') center top no-repeat
   padding: 6px 0;
   font-size: 16px;
 }
+#marqueeFloating span {
+  display: inline-block;
+  will-change: transform;
+}
 body.light #marqueeFloating { background: rgba(255,255,255,0.3); color: #1a73e8; }
 body.dark #marqueeFloating { background: rgba(0,0,0,0.3); color: #1a73e8; }
 </style>
@@ -151,6 +155,7 @@ document.getElementById("searchButton").addEventListener("click", searchAsset);
 
 // ====== Running Text langsung jalan ======
 const textEl = document.getElementById("marqueeFloatingText");
+textEl.style.display="inline-block";
 let offset = window.innerWidth;
 function runMarquee(){
   offset -= 1; // kecepatan
