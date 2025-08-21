@@ -2,108 +2,66 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8" />
-<title>Cek Aset Non Produksi PT INKA</title>
+<title>Cek Data Aset</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed&family=Roboto+Mono&display=swap" rel="stylesheet">
 <style>
-  body { margin: 20px; text-align: center; font-family: 'Roboto Condensed', Arial, sans-serif; transition: background 0.3s, color 0.3s; }
-  #searchBox { padding: 8px; font-size: 16px; font-family: 'Roboto Condensed', Arial, sans-serif; vertical-align: middle; transition: all 0.2s ease; }
-  #searchBox:focus { border: 2px solid #1a73e8; box-shadow: 0 0 6px rgba(26,115,232,0.4); outline: none; }
-  #searchButton { font-size: 16px; padding: 8px 12px; vertical-align: middle; cursor: pointer; }
-
-  #output {
-    margin-top: 60px;
-    text-align: left;
-    display: inline-block;
-    padding: 12px 20px;
-    border-radius: 6px;
-    transition: background 0.3s, color 0.3s, border 0.3s;
-    max-width: 480px;
+  body {
+    font-family: 'Roboto Condensed', Arial, sans-serif;
+    margin: 20px;
     background: #f8fbff;
     color: #222;
+    text-align: center;
+  }
+  #output {
+    margin: 20px auto 0 auto;
+    max-width: 480px;
+    text-align: left;
     border: 1px solid #ccc;
+    background: white;
+    padding: 12px 20px;
+    border-radius: 6px;
     font-family: 'Roboto Mono', monospace;
   }
-
-  /* Grid untuk label dan value */
-  #output .row {
+  .row {
     display: grid;
-    grid-template-columns: 140px 1fr;
-    margin-bottom: 6px; /* Jarak antar baris, lebih rapat */
+    grid-template-columns: auto 1fr;
+    grid-column-gap: 12px;
+    margin-bottom: 6px;
     align-items: start;
   }
-  #output .label {
-    font-weight: 700;
-    white-space: nowrap;
-    padding-right: 10px;
-    text-align: right;
+  .label {
+    font-weight: bold;
+    text-align: left;
     user-select: none;
   }
-  #output .value {
-    word-wrap: break-word;
+  .value {
     white-space: normal;
-    line-height: 1.3; /* agar jarak antar baris rapat tapi tidak terlalu padat */
-  }
-
-  /* Hint dan tombol tema */
-  .hint { font-size: 12px; color: #666; margin-top: 6px; }
-  #themeToggle { display: block; margin: 10px auto 0 auto; padding: 6px 12px; cursor: pointer; }
-
-  /* Tema Dark */
-  body.dark {
-    background: #121212 url('kereta-watermark.png') center top no-repeat;
-    background-size: contain;
-    color: #eee;
-  }
-  body.dark #output {
-    background: #121212;
-    color: #eee;
-    border: 1px solid #555;
-  }
-  body.dark #searchBox {
-    background: #222;
-    color: #fff;
+    line-height: 1.3;
+    word-wrap: break-word;
   }
 </style>
 </head>
 <body>
 
 <h2>Cek Data Aset</h2>
-<div style="margin-top:20px;">
-  <input type="text" id="searchBox" placeholder="Masukkan Nomor Aset..." autocomplete="off" style="width:220px;" />
-  <button id="searchButton">🔍</button>
+<div id="output">
+  <!-- Data akan diisi di sini -->
 </div>
-<div class="hint">Tekan Enter atau tombol 🔍 untuk mencari. Jika kode 8 digit tanpa “-” atau 8 digit + "-", otomatis ditambah “-0”.</div>
-
-<div id="output">Silakan ketik Nomor Aset…</div>
-
-<button id="themeToggle">Tema Gelap</button>
 
 <script>
-const assets = [
-  {
+  const asset = {
     kode: "10100003-0",
     deskripsi: "TANAH JALAN SALAK NO. 59 MADIUN",
     kapitalisasi: "1984",
     nilai: "Rp. 1.512.316.000",
-    opname: "25-04-2025",
     lokasi: "Mes Salak Madiun",
     detail: "JALAN SALAK NO. 59 MADIUN",
+    opname: "25-04-2025",
     kondisi: "BAIK",
     catatan: "Mes Salak dan Kantor IMSS"
-  }
-];
+  };
 
-const output = document.getElementById("output");
-const searchBox = document.getElementById("searchBox");
-
-function renderAsset(a) {
-  if (!a) {
-    output.textContent = "Data tidak ditemukan.";
-    return;
-  }
-  // Bersihkan dulu isi output
-  output.innerHTML = "";
+  const output = document.getElementById("output");
 
   function createRow(label, value) {
     const row = document.createElement("div");
@@ -119,43 +77,20 @@ function renderAsset(a) {
     return row;
   }
 
-  output.appendChild(createRow("Nomor Aset", a.kode));
-  output.appendChild(createRow("Deskripsi", a.deskripsi));
-  output.appendChild(createRow("Kapitalisasi", a.kapitalisasi));
-  output.appendChild(createRow("Nilai Perolehan", a.nilai));
-  output.appendChild(createRow("Lokasi", a.lokasi));
-  output.appendChild(createRow("Detail Lokasi", a.detail));
-  output.appendChild(createRow("Opname Terakhir", a.opname));
-  output.appendChild(createRow("Kondisi", a.kondisi));
-  output.appendChild(createRow("Catatan", a.catatan));
-}
-
-function searchAsset() {
-  const kode = searchBox.value.trim();
-  if (!kode) {
-    output.textContent = "Masukkan Nomor Aset terlebih dahulu.";
-    return;
+  function renderAsset(a) {
+    output.innerHTML = "";
+    output.appendChild(createRow("Nomor Aset", a.kode));
+    output.appendChild(createRow("Deskripsi", a.deskripsi));
+    output.appendChild(createRow("Kapitalisasi", a.kapitalisasi));
+    output.appendChild(createRow("Nilai Perolehan", a.nilai));
+    output.appendChild(createRow("Lokasi", a.lokasi));
+    output.appendChild(createRow("Detail Lokasi", a.detail));
+    output.appendChild(createRow("Opname Terakhir", a.opname));
+    output.appendChild(createRow("Kondisi", a.kondisi));
+    output.appendChild(createRow("Catatan", a.catatan));
   }
-  // Cari asset
-  const found = assets.find(a => a.kode === kode);
-  renderAsset(found);
-}
 
-searchBox.addEventListener("keydown", e => {
-  if (e.key === "Enter") searchAsset();
-});
-document.getElementById("searchButton").addEventListener("click", searchAsset);
-
-// Tema toggle
-const themeToggle = document.getElementById("themeToggle");
-function setTheme(theme) {
-  document.body.className = theme;
-  themeToggle.textContent = theme === "light" ? "Tema Gelap" : "Tema Terang";
-}
-setTheme("light");
-themeToggle.addEventListener("click", () => {
-  setTheme(document.body.className === "light" ? "dark" : "light");
-});
+  renderAsset(asset);
 </script>
 
 </body>
