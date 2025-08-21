@@ -15,7 +15,7 @@ body { margin: 20px; text-align: center; font-family: 'Roboto Condensed', Arial,
 #searchButton { font-size: 16px; padding: 8px 12px; vertical-align: middle; cursor: pointer; }
 
 #output { margin-top: 60px; text-align: left; display: inline-block; padding: 12px; border-radius:6px; transition: background 0.3s, color 0.3s, border 0.3s; }
-#output pre { margin: 0; font-size: 16px; line-height: 1.3; font-family: 'Roboto Mono', monospace; white-space: pre-wrap; word-wrap: break-word; }
+#output pre { margin: 0; font-size: 16px; line-height: 1.2; font-family: 'Roboto Mono', monospace; white-space: pre-wrap; word-wrap: break-word; }
 
 .hint { font-size: 12px; color: #666; margin-top: 6px; }
 
@@ -100,25 +100,12 @@ const searchBox = document.getElementById("searchBox");
 function parseCSV(text){
   const lines = text.split(/\r?\n/);
   return lines.map(line=>{
-    const cells=[];
-    let cur="", inQuotes=false;
+    const cells=[]; let cur="", inQuotes=false;
     for(let i=0;i<line.length;i++){
       const ch=line[i];
-      if(ch=='"'){
-        if(inQuotes && line[i+1]=='"'){
-          cur+='"';
-          i++;
-        } else{
-          inQuotes=!inQuotes;
-        }
-      }
-      else if(ch==',' && !inQuotes){
-        cells.push(cur);
-        cur="";
-      }
-      else{
-        cur+=ch;
-      }
+      if(ch=='"'){ if(inQuotes && line[i+1]=='"'){cur+='"';i++;} else{inQuotes=!inQuotes;} }
+      else if(ch==',' && !inQuotes){ cells.push(cur); cur=""; }
+      else{ cur+=ch; }
     }
     cells.push(cur);
     return cells.map(c=>c.replace(/^"|"$/g,""));
@@ -144,9 +131,7 @@ async function loadSheet(){
   const dataList = document.getElementById("assetList");
   dataList.innerHTML="";
   assets.map(a=>a.kode).sort((a,b)=>a.localeCompare(b)).slice(0,5000).forEach(k=>{
-    const opt=document.createElement("option");
-    opt.value=k;
-    dataList.appendChild(opt);
+    const opt=document.createElement("option"); opt.value=k; dataList.appendChild(opt);
   });
 }
 loadSheet().catch(err=>{
@@ -166,58 +151,53 @@ function formatAsset(a) {
     ["Catatan", a.catatan]
   ];
 
-  const indentSize = 18; // Lebar label + spasi dan titik dua
+  const indentSize = 16; // lebar label + spasi + ": "
+  const indentSpaces = " ".repeat(indentSize + 2); // untuk baris kedua dan seterusnya
 
   return rows.map(([label, valRaw]) => {
     const val = (valRaw || "-").toString();
     const padLabel = label.padEnd(indentSize, " ") + ": ";
-    const wrapWidth = 80 - indentSize - 2; // perkiraan panjang maksimum baris
+
+    const maxLineLength = 70;
     const words = val.split(" ");
     const lines = [];
-    let line = "";
+    let currentLine = "";
 
-    for (let word of words) {
-      if ((line + word).length > wrapWidth) {
-        lines.push(line.trim());
-        line = word + " ";
+    words.forEach(word => {
+      if ((currentLine + word).length > maxLineLength) {
+        lines.push(currentLine.trim());
+        currentLine = word + " ";
       } else {
-        line += word + " ";
+        currentLine += word + " ";
       }
-    }
-    lines.push(line.trim());
+    });
+    lines.push(currentLine.trim());
 
-    const formatted = lines.map((l, i) =>
-      i === 0 ? padLabel + l : " ".repeat(indentSize + 2) + l
-    ).join("\n");
-
-    return formatted;
+    return lines.map((line, idx) => idx === 0 ? padLabel + line : indentSpaces + line).join("\n");
   }).join("\n\n");
 }
 
 function searchAsset(){
   const pre=document.querySelector("#output pre");
   let kode=searchBox.value.trim();
-  if(!kode){
-    pre.textContent="Masukkan Nomor Aset terlebih dahulu.";
-    return;
-  }
+  if(!kode){ pre.textContent="Masukkan Nomor Aset terlebih dahulu."; return; }
   if(/^\d{8}$/.test(kode)) kode+="-0";
   else if(/^\d{8}-$/.test(kode)) kode+="0";
 
   const found=assets.find(a=>a.kode===kode);
-  if(found){
-    document.getElementById("output").innerHTML = "<pre>" + formatAsset(found) + "</pre>";
-  } else {
-    pre.textContent="Data tidak ditemukan.";
-  }
+  pre.textContent=found?formatAsset(found):"Data tidak ditemukan.";
 }
 
-searchBox.addEventListener("keydown", e => { if(e.key==="Enter") searchAsset(); });
-searchBox.addEventListener("focus", function(){ setTimeout(()=>{this.select();},0); });
+searchBox.addEventListener("keydown", e=>{
+  if(e.key==="Enter") searchAsset();
+});
+searchBox.addEventListener("focus", function(){
+  setTimeout(() => { this.select(); }, 0);
+});
 document.getElementById("searchButton").addEventListener("click", searchAsset);
 
 // ====== Floating RUNNING TEXT dari Sheet5 R1 ======
-const sheet5Url="https://docs.google.com/spreadsheets/d/e/.../pub?gid=XXXXX&single=true&output=csv"; // Ganti sesuai Sheet5
+const sheet5Url = "https://docs.google.com/spreadsheets/d/e/.../pub?gid=XXXXX&single=true&output=csv"; // Ganti sesuai Sheet5
 async function loadMarqueeFloating(){
   try{
     const res = await fetch(sheet5Url);
