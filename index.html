@@ -4,107 +4,115 @@
 <meta charset="UTF-8" />
 <title>Cek Aset Non Produksi PT INKA</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-<!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed&family=Roboto+Mono&display=swap" rel="stylesheet">
-
 <style>
-body { margin: 20px; text-align: center; font-family: 'Roboto Condensed', Arial, sans-serif; transition: background 0.3s, color 0.3s; }
-#searchBox { padding: 8px; font-size: 16px; font-family: 'Roboto Condensed', Arial, sans-serif; vertical-align: middle; transition: all 0.2s ease; }
-#searchBox:focus { border: 2px solid #1a73e8; box-shadow: 0 0 6px rgba(26,115,232,0.4); outline: none; }
-#searchButton { font-size: 16px; padding: 8px 12px; vertical-align: middle; cursor: pointer; }
+body {
+  margin: 20px;
+  text-align: center;
+  font-family: 'Roboto Condensed', Arial, sans-serif;
+  transition: background 0.3s, color 0.3s;
+}
 
-#output { margin-top: 60px; text-align: left; display: inline-block; padding: 12px; border-radius:6px; transition: background 0.3s, color 0.3s, border 0.3s; max-width: 90vw; }
-#output pre { margin: 0; font-size: 16px; line-height: 1.3; font-family: 'Roboto Mono', monospace; white-space: normal; }
+#searchBox {
+  padding: 8px;
+  font-size: 16px;
+  font-family: 'Roboto Condensed', Arial, sans-serif;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+#searchBox:focus {
+  border: 2px solid #1a73e8;
+  box-shadow: 0 0 6px rgba(26,115,232,0.4);
+  outline: none;
+}
+#searchButton {
+  font-size: 16px;
+  padding: 8px 12px;
+  vertical-align: middle;
+  cursor: pointer;
+}
 
-.hint { font-size: 12px; color: #666; margin-top: 6px; }
+#output {
+  margin-top: 60px;
+  text-align: left;
+  display: inline-block;
+  padding: 12px;
+  border-radius: 6px;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+  min-width: 320px;
+  max-width: 100vw;
+  box-sizing: border-box;
+  background: #f8fbff;
+  color: #222;
+  border: 1px solid #ccc;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 16px;
+  line-height: 1.3;
+}
 
-/* Grid baris hasil pencarian */
+/* Baris 3 kolom */
 .row {
   display: grid;
-  grid-template-columns: auto 12px 1fr;
-  grid-column-gap: 8px;
+  grid-template-columns: auto 8px 1fr;
+  grid-column-gap: 4px;
   margin-bottom: 6px;
   align-items: stretch;
 }
+
 .label {
   text-align: left;
   font-weight: bold;
   user-select: none;
-  align-self: start; /* label di atas */
-}
-.colon {
-  text-align: center;
-  font-weight: bold;
-  user-select: none;
-  align-self: end; /* titik dua turun ke bawah */
-}
-.value {
-  white-space: normal;
-  line-height: 1.3;
-  word-wrap: break-word;
-  text-align: left;
-  align-self: start; /* nilai di atas */
+  align-self: start;
 }
 
-/* Tombol tema di bawah kotak, center */
+.colon {
+  width: 8px;
+  border-left: 2px solid #444;
+  margin: 0 4px;
+  align-self: stretch;
+}
+
+.value {
+  white-space: normal;
+  word-wrap: break-word;
+  text-align: left;
+  align-self: start;
+}
+
+.hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 6px;
+}
+
+/* Tombol tema */
 #themeToggle {
-  display: block;          
-  margin: 10px auto 0 auto; 
+  display: block;
+  margin: 10px auto 0 auto;
   padding: 6px 12px;
   cursor: pointer;
 }
 
-/* Tema Light */
-body.light { 
-  background: url('kereta-watermark.png') center top no-repeat; 
-  background-size: contain; 
-  background-color: #f8fbff; 
-  color: #222; 
-}
-#output.light { 
-  background: #f8fbff; 
-  color:#222; 
-  border: 1px solid #ccc; 
-}
-#searchBox.light { background:#fff; color:#000; }
-
 /* Tema Dark */
-body.dark { 
-  background: #121212 url('kereta-watermark.png') center top no-repeat; 
-  background-size: contain; 
-  color: #eee; 
+body.dark {
+  background: #121212 url('kereta-watermark.png') center top no-repeat;
+  background-size: contain;
+  color: #eee;
 }
-#output.dark { 
-  background: #121212; 
-  color:#eee; 
-  border: 1px solid #555; 
+#output.dark {
+  background: #121212;
+  color: #eee;
+  border: 1px solid #555;
 }
-#searchBox.dark { background:#222; color:#fff; }
+#searchBox.dark {
+  background: #222;
+  color: #fff;
+}
 
-/* Floating Running Text */
-#marqueeFloating {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  pointer-events: none;
-  font-family: 'Roboto Condensed', Arial, sans-serif;
-  font-weight: 500;
-  z-index: 9999;
-  padding: 6px 0;
-  font-size: 16px;
-}
-body.light #marqueeFloating { background: rgba(255,255,255,0.3); color: #1a73e8; }
-body.dark #marqueeFloating { background: rgba(0,0,0,0.3); color: #1a73e8; }
 </style>
 </head>
 <body>
-
-<!-- Floating Running Text -->
-<div id="marqueeFloating"><span id="marqueeFloatingText">Memuat info...</span></div>
 
 <h2>Cek Data Aset</h2>
 <div style="margin-top:20px;">
@@ -114,156 +122,136 @@ body.dark #marqueeFloating { background: rgba(0,0,0,0.3); color: #1a73e8; }
 </div>
 <div class="hint">Tekan Enter atau tombol 🔍 untuk mencari. Jika kode 8 digit tanpa “-” atau 8 digit + "-", otomatis ditambah “-0”.</div>
 
-<div id="output" class="light"><pre>Silakan ketik Nomor Aset…</pre></div>
+<div id="output">
+  <!-- Isi hasil pencarian akan dimasukkan di sini -->
+</div>
 
-<!-- Tombol tema di bawah kotak output -->
 <button id="themeToggle">Tema Gelap</button>
 
 <script>
-// ====== ASET ======
 const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTafvAiaKbaQt2RIboLf9nY6v8mltXLhSN4R-l-LZGFmic1p0-83knr-g-bFEoPDB8Rl2T661YdYFTj/pub?gid=1753334008&single=true&output=csv";
 let assets = [];
 const searchBox = document.getElementById("searchBox");
+const output = document.getElementById("output");
 
 function parseCSV(text){
   const lines = text.split(/\r?\n/);
   return lines.map(line=>{
-    const cells=[]; let cur="", inQuotes=false;
-    for(let i=0;i<line.length;i++){
-      const ch=line[i];
-      if(ch=='"'){ if(inQuotes && line[i+1]=='"'){cur+='"';i++;} else{inQuotes=!inQuotes;} }
-      else if(ch==',' && !inQuotes){ cells.push(cur); cur=""; }
-      else{ cur+=ch; }
+    const cells = [];
+    let cur = "", inQuotes = false;
+    for(let i=0; i<line.length; i++){
+      const ch = line[i];
+      if(ch == '"'){
+        if(inQuotes && line[i+1] == '"'){ cur += '"'; i++; }
+        else{ inQuotes = !inQuotes; }
+      }
+      else if(ch == ',' && !inQuotes){ cells.push(cur); cur=""; }
+      else{ cur += ch; }
     }
     cells.push(cur);
-    return cells.map(c=>c.replace(/^"|"$/g,""));
+    return cells.map(c => c.replace(/^"|"$/g,""));
   });
 }
 
 async function loadSheet(){
-  const res = await fetch(sheetUrl);
-  const text = await res.text();
-  const rows = parseCSV(text);
-  assets = rows.map(r=>({
-    kode:(r[4]||"").trim(),
-    deskripsi:r[5]||"",
-    kapitalisasi:r[6]||"",
-    nilai:r[19]||"",
-    opname:r[10]||r[9]||"",
-    lokasi:r[13]||"",
-    detail:r[14]||"",
-    kondisi:r[15]||"",
-    catatan:(r[16]&&r[16].trim())?r[16]:(r[21]||"")
-  })).filter(a=>a.kode);
+  try {
+    const res = await fetch(sheetUrl);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    assets = rows.map(r=>({
+      kode:(r[4]||"").trim(),
+      deskripsi:r[5]||"",
+      kapitalisasi:r[6]||"",
+      nilai:r[19]||"",
+      opname:r[10]||r[9]||"",
+      lokasi:r[13]||"",
+      detail:r[14]||"",
+      kondisi:r[15]||"",
+      catatan:(r[16]&&r[16].trim())?r[16]:(r[21]||"")
+    })).filter(a=>a.kode);
 
-  const dataList = document.getElementById("assetList");
-  dataList.innerHTML="";
-  assets.map(a=>a.kode).sort((a,b)=>a.localeCompare(b)).slice(0,5000).forEach(k=>{
-    const opt=document.createElement("option"); opt.value=k; dataList.appendChild(opt);
-  });
+    const dataList = document.getElementById("assetList");
+    dataList.innerHTML = "";
+    assets.map(a=>a.kode).sort((a,b)=>a.localeCompare(b)).slice(0,5000).forEach(k=>{
+      const opt = document.createElement("option");
+      opt.value = k;
+      dataList.appendChild(opt);
+    });
+  } catch(e){
+    output.innerHTML = "<pre>Gagal memuat data: "+e+"</pre>";
+  }
 }
-loadSheet().catch(err=>{
-  document.querySelector("#output pre").textContent="Gagal memuat data: "+err;
-});
+loadSheet();
 
-// Ganti render hasil menjadi 3 kolom grid
-function formatAsset(a){
-  const rows = [
-    ["Nomor Aset", a.kode],
-    ["Deskripsi", a.deskripsi],
-    ["Kapitalisasi", a.kapitalisasi],
-    ["Nilai Perolehan", a.nilai? (a.nilai.startsWith("Rp.")?a.nilai:"Rp. "+a.nilai) : "Rp. -"],
-    ["Lokasi", a.lokasi],
-    ["Detail Lokasi", a.detail],
-    ["Opname Terakhir", a.opname],
-    ["Kondisi", a.kondisi],
-    ["Catatan", a.catatan]
-  ];
-  const container = document.createElement("div");
-  rows.forEach(([label, val])=>{
-    const row = document.createElement("div");
-    row.className = "row";
+function createRow(label, value){
+  const row = document.createElement("div");
+  row.className = "row";
 
-    const labelDiv = document.createElement("div");
-    labelDiv.className = "label";
-    labelDiv.textContent = label;
+  const labelDiv = document.createElement("div");
+  labelDiv.className = "label";
+  labelDiv.textContent = label;
 
-    const colonDiv = document.createElement("div");
-    colonDiv.className = "colon";
-    colonDiv.textContent = ":";
+  const colonDiv = document.createElement("div");
+  colonDiv.className = "colon";
+  // Kosongkan textContent supaya hanya garis vertikal, bukan ":"
+  colonDiv.textContent = "";
 
-    const valueDiv = document.createElement("div");
-    valueDiv.className = "value";
-    valueDiv.textContent = val || "";
+  const valueDiv = document.createElement("div");
+  valueDiv.className = "value";
+  valueDiv.textContent = value;
 
-    row.appendChild(labelDiv);
-    row.appendChild(colonDiv);
-    row.appendChild(valueDiv);
-    container.appendChild(row);
-  });
-  return container;
+  row.appendChild(labelDiv);
+  row.appendChild(colonDiv);
+  row.appendChild(valueDiv);
+
+  return row;
 }
 
 function searchAsset(){
-  const output = document.getElementById("output");
+  output.innerHTML = "";
   let kode = searchBox.value.trim();
   if(!kode){
-    output.innerHTML = "<pre>Masukkan Nomor Aset terlebih dahulu.</pre>";
+    output.textContent = "Masukkan Nomor Aset terlebih dahulu.";
     return;
   }
   if(/^\d{8}$/.test(kode)) kode += "-0";
   else if(/^\d{8}-$/.test(kode)) kode += "0";
 
   const found = assets.find(a => a.kode === kode);
-  if(found){
-    output.innerHTML = ""; // clear previous
-    output.appendChild(formatAsset(found));
-  } else {
-    output.innerHTML = "<pre>Data tidak ditemukan.</pre>";
+  if(!found){
+    output.textContent = "Data tidak ditemukan.";
+    return;
   }
+
+  output.appendChild(createRow("Nomor Aset", found.kode));
+  output.appendChild(createRow("Deskripsi", found.deskripsi));
+  output.appendChild(createRow("Kapitalisasi", found.kapitalisasi));
+  output.appendChild(createRow("Nilai Perolehan", found.nilai ? (found.nilai.startsWith("Rp.") ? found.nilai : "Rp. "+found.nilai) : "Rp. -"));
+  output.appendChild(createRow("Lokasi", found.lokasi));
+  output.appendChild(createRow("Detail Lokasi", found.detail));
+  output.appendChild(createRow("Opname Terakhir", found.opname));
+  output.appendChild(createRow("Kondisi", found.kondisi));
+  output.appendChild(createRow("Catatan", found.catatan));
 }
 
-searchBox.addEventListener("keydown", e => { if(e.key === "Enter") searchAsset(); });
-searchBox.addEventListener("focus", function(){ setTimeout(()=>{this.select();}, 0); });
+searchBox.addEventListener("keydown", e=>{
+  if(e.key === "Enter") searchAsset();
+});
 document.getElementById("searchButton").addEventListener("click", searchAsset);
+searchBox.addEventListener("focus", function(){ setTimeout(()=>{this.select();},0); });
 
-// ====== Floating RUNNING TEXT dari Sheet5 R1 ======
-const sheet5Url = "https://docs.google.com/spreadsheets/d/e/.../pub?gid=XXXXX&single=true&output=csv"; // Ganti sesuai Sheet5
-async function loadMarqueeFloating(){
-  try{
-    const res = await fetch(sheet5Url);
-    const text = await res.text();
-    const rows = text.split(/\r?\n/).map(r=>r.split(','));
-    const r1 = rows[0][17] || "Memuat info...";
-    const textEl = document.getElementById("marqueeFloatingText");
-    textEl.textContent = r1;
-
-    let offset = window.innerWidth;
-    function runMarquee(){
-      offset -= 1;
-      textEl.style.transform = `translateX(${offset}px)`;
-      if(Math.abs(offset) > textEl.offsetWidth) offset = window.innerWidth;
-      requestAnimationFrame(runMarquee);
-    }
-    runMarquee();
-  } catch(err){
-    document.getElementById("marqueeFloatingText").textContent = "Gagal memuat info.";
-  }
-}
-loadMarqueeFloating();
-
-// ====== Toggle Tema ======
+// Tema toggle
 const themeToggle = document.getElementById("themeToggle");
 function setTheme(theme){
   document.body.className = theme;
-  document.getElementById("output").className = theme;
-  document.getElementById("searchBox").className = theme;
+  output.className = theme;
+  searchBox.className = theme;
   themeToggle.textContent = theme === 'light' ? 'Tema Gelap' : 'Tema Terang';
 }
 setTheme('light');
 themeToggle.addEventListener("click", () => {
-  if(document.body.classList.contains('dark')) setTheme('light');
-  else setTheme('dark');
+  const current = document.body.className;
+  setTheme(current === 'light' ? 'dark' : 'light');
 });
 </script>
 
