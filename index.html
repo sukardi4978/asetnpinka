@@ -12,7 +12,6 @@ body {
   font-family: 'Roboto Condensed', Arial, sans-serif;
   transition: background 0.3s, color 0.3s;
 }
-
 #searchBox {
   padding: 8px;
   font-size: 16px;
@@ -31,7 +30,6 @@ body {
   vertical-align: middle;
   cursor: pointer;
 }
-
 #output {
   margin-top: 60px;
   text-align: left;
@@ -48,42 +46,64 @@ body {
   font-family: 'Roboto Mono', monospace;
   font-size: 16px;
   line-height: 1.3;
+  position: relative;
+  padding-left: 14px; /* space for vertical colon */
 }
-
-/* Baris 3 kolom */
-.row {
+/* Layout 3 kolom dengan grid */
+#output .row {
   display: grid;
-  grid-template-columns: auto 8px 1fr;
-  grid-column-gap: 4px;
+  grid-template-columns: auto 4px 1fr;
+  grid-column-gap: 6px;
   margin-bottom: 6px;
-  align-items: stretch;
+  align-items: start;
 }
-
-.label {
+#output .label {
   text-align: left;
   font-weight: bold;
   user-select: none;
-  align-self: start;
 }
-
-.colon {
-  width: 8px;
-  border-left: 2px solid #444;
-  margin: 0 4px;
-  align-self: stretch;
+#output .colon {
+  position: relative;
+  width: 4px;
 }
-
-.value {
+#output .colon::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #444;
+  transform: translateX(-50%);
+}
+#output .value {
   white-space: normal;
   word-wrap: break-word;
   text-align: left;
-  align-self: start;
 }
 
-.hint {
-  font-size: 12px;
-  color: #666;
-  margin-top: 6px;
+/* Floating Running Text */
+#marqueeFloating {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+  font-family: 'Roboto Condensed', Arial, sans-serif;
+  font-weight: 500;
+  z-index: 9999;
+  padding: 6px 0;
+  font-size: 16px;
+}
+body.light #marqueeFloating {
+  background: rgba(255,255,255,0.3);
+  color: #1a73e8;
+}
+body.dark #marqueeFloating {
+  background: rgba(0,0,0,0.3);
+  color: #1a73e8;
 }
 
 /* Tombol tema */
@@ -92,6 +112,23 @@ body {
   margin: 10px auto 0 auto;
   padding: 6px 12px;
   cursor: pointer;
+}
+
+/* Tema Light */
+body.light {
+  background: url('kereta-watermark.png') center top no-repeat;
+  background-size: contain;
+  background-color: #f8fbff;
+  color: #222;
+}
+#output.light {
+  background: #f8fbff;
+  color: #222;
+  border: 1px solid #ccc;
+}
+#searchBox.light {
+  background: #fff;
+  color: #000;
 }
 
 /* Tema Dark */
@@ -109,10 +146,12 @@ body.dark {
   background: #222;
   color: #fff;
 }
-
 </style>
 </head>
 <body>
+
+<!-- Floating Running Text -->
+<div id="marqueeFloating"><span id="marqueeFloatingText">Memuat info...</span></div>
 
 <h2>Cek Data Aset</h2>
 <div style="margin-top:20px;">
@@ -122,13 +161,12 @@ body.dark {
 </div>
 <div class="hint">Tekan Enter atau tombol 🔍 untuk mencari. Jika kode 8 digit tanpa “-” atau 8 digit + "-", otomatis ditambah “-0”.</div>
 
-<div id="output">
-  <!-- Isi hasil pencarian akan dimasukkan di sini -->
-</div>
+<div id="output"><pre>Silakan ketik Nomor Aset…</pre></div>
 
 <button id="themeToggle">Tema Gelap</button>
 
 <script>
+// ====== ASET ======
 const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTafvAiaKbaQt2RIboLf9nY6v8mltXLhSN4R-l-LZGFmic1p0-83knr-g-bFEoPDB8Rl2T661YdYFTj/pub?gid=1753334008&single=true&output=csv";
 let assets = [];
 const searchBox = document.getElementById("searchBox");
@@ -137,53 +175,48 @@ const output = document.getElementById("output");
 function parseCSV(text){
   const lines = text.split(/\r?\n/);
   return lines.map(line=>{
-    const cells = [];
-    let cur = "", inQuotes = false;
-    for(let i=0; i<line.length; i++){
-      const ch = line[i];
-      if(ch == '"'){
-        if(inQuotes && line[i+1] == '"'){ cur += '"'; i++; }
-        else{ inQuotes = !inQuotes; }
-      }
-      else if(ch == ',' && !inQuotes){ cells.push(cur); cur=""; }
-      else{ cur += ch; }
+    const cells=[];
+    let cur="", inQuotes=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch=='"'){ if(inQuotes && line[i+1]=='"'){cur+='"';i++;} else{inQuotes=!inQuotes;} }
+      else if(ch==',' && !inQuotes){ cells.push(cur); cur=""; }
+      else{ cur+=ch; }
     }
     cells.push(cur);
-    return cells.map(c => c.replace(/^"|"$/g,""));
+    return cells.map(c=>c.replace(/^"|"$/g,""));
   });
 }
 
 async function loadSheet(){
-  try {
-    const res = await fetch(sheetUrl);
-    const text = await res.text();
-    const rows = parseCSV(text);
-    assets = rows.map(r=>({
-      kode:(r[4]||"").trim(),
-      deskripsi:r[5]||"",
-      kapitalisasi:r[6]||"",
-      nilai:r[19]||"",
-      opname:r[10]||r[9]||"",
-      lokasi:r[13]||"",
-      detail:r[14]||"",
-      kondisi:r[15]||"",
-      catatan:(r[16]&&r[16].trim())?r[16]:(r[21]||"")
-    })).filter(a=>a.kode);
+  const res = await fetch(sheetUrl);
+  const text = await res.text();
+  const rows = parseCSV(text);
+  assets = rows.map(r=>({
+    kode:(r[4]||"").trim(),
+    deskripsi:r[5]||"",
+    kapitalisasi:r[6]||"",
+    nilai:r[19]||"",
+    opname:r[10]||r[9]||"",
+    lokasi:r[13]||"",
+    detail:r[14]||"",
+    kondisi:r[15]||"",
+    catatan:(r[16]&&r[16].trim())?r[16]:(r[21]||"")
+  })).filter(a=>a.kode);
 
-    const dataList = document.getElementById("assetList");
-    dataList.innerHTML = "";
-    assets.map(a=>a.kode).sort((a,b)=>a.localeCompare(b)).slice(0,5000).forEach(k=>{
-      const opt = document.createElement("option");
-      opt.value = k;
-      dataList.appendChild(opt);
-    });
-  } catch(e){
-    output.innerHTML = "<pre>Gagal memuat data: "+e+"</pre>";
-  }
+  const dataList = document.getElementById("assetList");
+  dataList.innerHTML = "";
+  assets.map(a=>a.kode).sort((a,b)=>a.localeCompare(b)).slice(0,5000).forEach(k=>{
+    const opt=document.createElement("option");
+    opt.value=k;
+    dataList.appendChild(opt);
+  });
 }
-loadSheet();
+loadSheet().catch(err=>{
+  output.innerHTML = "<pre>Gagal memuat data: "+err+"</pre>";
+});
 
-function createRow(label, value){
+function createRow(label,value){
   const row = document.createElement("div");
   row.className = "row";
 
@@ -193,8 +226,7 @@ function createRow(label, value){
 
   const colonDiv = document.createElement("div");
   colonDiv.className = "colon";
-  // Kosongkan textContent supaya hanya garis vertikal, bukan ":"
-  colonDiv.textContent = "";
+  colonDiv.textContent = ""; // Kosongkan, supaya hanya garis vertikal lewat CSS
 
   const valueDiv = document.createElement("div");
   valueDiv.className = "value";
@@ -217,7 +249,7 @@ function searchAsset(){
   if(/^\d{8}$/.test(kode)) kode += "-0";
   else if(/^\d{8}-$/.test(kode)) kode += "0";
 
-  const found = assets.find(a => a.kode === kode);
+  const found = assets.find(a=>a.kode===kode);
   if(!found){
     output.textContent = "Data tidak ditemukan.";
     return;
@@ -234,24 +266,40 @@ function searchAsset(){
   output.appendChild(createRow("Catatan", found.catatan));
 }
 
-searchBox.addEventListener("keydown", e=>{
-  if(e.key === "Enter") searchAsset();
-});
+// event
+searchBox.addEventListener("keydown", e=>{ if(e.key==="Enter") searchAsset(); });
 document.getElementById("searchButton").addEventListener("click", searchAsset);
 searchBox.addEventListener("focus", function(){ setTimeout(()=>{this.select();},0); });
 
-// Tema toggle
+// ====== Floating RUNNING TEXT dari Sheet5 R1 ======
+const sheet5Url = "https://docs.google.com/spreadsheets/d/e/.../pub?gid=XXXXX&single=true&output=csv"; // Ganti sesuai Sheet5
+async function loadMarqueeFloating(){
+  try{
+    const res = await fetch(sheet5Url);
+    const text = await res.text();
+    const rows = text.split(/\r?\n/).map(r=>r.split(","));
+    const firstRow = rows[0] || [];
+    const marqueeText = firstRow[0] || "Selamat Datang di Aplikasi Cek Aset";
+    document.getElementById("marqueeFloatingText").textContent = marqueeText;
+  }catch(e){
+    document.getElementById("marqueeFloatingText").textContent = "Gagal memuat info.";
+  }
+}
+// Jika kamu mau, bisa panggil loadMarqueeFloating() disini
+// loadMarqueeFloating();
+
+// ====== Tema =======
 const themeToggle = document.getElementById("themeToggle");
 function setTheme(theme){
   document.body.className = theme;
   output.className = theme;
   searchBox.className = theme;
-  themeToggle.textContent = theme === 'light' ? 'Tema Gelap' : 'Tema Terang';
+  themeToggle.textContent = theme==='light'?'Tema Gelap':'Tema Terang';
 }
-setTheme('light');
-themeToggle.addEventListener("click", () => {
+setTheme("light");
+themeToggle.addEventListener("click", ()=>{
   const current = document.body.className;
-  setTheme(current === 'light' ? 'dark' : 'light');
+  setTheme(current==="light"?"dark":"light");
 });
 </script>
 
